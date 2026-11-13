@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShubhamCorp — Employee Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <!--
+    Developer: Shubham
+    Project: Employee Management System
+    Last updated: May 2026
+    TODO: Add dark mode toggle, improve mobile responsiveness
+  -->
+</head>
+<body>
+
+<!-- ════════════════════════════ SIDEBAR ════════════════════════════ -->
+<aside class="sidebar" aria-label="Main sidebar navigation">
+  <div class="sidebar-brand">
+    <div class="brand-lockup">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h18v4H3z"/>
+        </svg>
+      </div>
+      <div class="brand-label">
+        <div class="brand-name">ShubhamCorp</div>
+        <div class="brand-sub">DBMS Lab · v1.0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar navigation links -->
+  <div class="nav-section">
+    <div class="nav-section-label">Workspace</div>
+    <!-- TIP: Add more navigation items here if needed -->
+    <button class="nav-item active" data-tab="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Overview
+    </button>
+    <button class="nav-item" data-tab="employees">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.85"/></svg>
+      Employees
+      <span class="nav-pill" id="pill-employees">0</span>
+    </button>
+    <button class="nav-item" data-tab="departments">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Departments
+      <span class="nav-pill" id="pill-departments">0</span>
+    </button>
+    <button class="nav-item" data-tab="projects">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Projects
+      <span class="nav-pill" id="pill-projects">0</span>
+    </button>
+    <button class="nav-item" data-tab="dependents">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Dependents
+    </button>
+  </div>
+
+  <!-- Sidebar footer with status -->
+  <div class="sidebar-footer">
+    <div class="status-row">
+      <div class="status-dot"></div>
+      <span>SQLite · Connected</span>
+    </div>
+    <div class="profile-section" style="margin-top:12px;">
+      <img src="https://ui-avatars.com/api/?name=Shubham&background=0D8ABC&color=fff" alt="Profile" style="width:32px;height:32px;border-radius:50%;margin-right:8px;vertical-align:middle;">
+      <span style="vertical-align:middle;">Hi, Shubham!</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ════════════════════════════ MAIN ════════════════════════════ -->
+<div class="main-wrapper">
+
+  <header class="topbar" aria-label="Top navigation bar">
+    <div class="topbar-left">
+      <div class="breadcrumb">
+        <span>CompanyMS</span>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current" id="bc-current">Overview</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-chip" id="topbar-date"></span>
+    </div>
+  </header>
+
+  <div class="content" id="main-content">
+    <!--
+      Welcome message for users
+      You can further personalize this section.
+    -->
+    <div id="welcome-message" style="background:#e6f7ff;padding:16px 24px;border-radius:8px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+      <h2 style="margin:0 0 6px 0;font-size:1.4em;">Welcome to ShubhamCorp Employee Management System!</h2>
+      <p style="margin:0;font-size:1em;">Manage employees, departments, projects, and dependents with ease. Built for DBMS Lab, crafted with care by Shubham.</p>
+    </div>
+
+    <!-- loader -->
+    <!--
+      The loader appears while records are being fetched from the backend.
+    -->
+    <div class="loader" id="global-loader">
+      <div class="spin"></div>
+      <span>Loading records…</span>
+    </div>
+
+    <!-- ══════════ DASHBOARD ══════════ -->
+    <!--
+      Dashboard shows KPIs and visualizations for quick overview.
+    -->
+    <section class="tab-panel hidden" id="tab-dashboard">
+      <div class="kpi-row">
+        <div class="kpi kpi-blue">
+          <div class="kpi-label"><span class="kpi-label-dot"></span>Employees</div>
+          <div class="kpi-value" id="kpi-emp">—</div>
+          <div class="kpi-sub">Total headcount</div>
+        </div>
+        <div class="kpi kpi-green">
+          <div class="kpi-label"><span class="kpi-label-dot"></span>Departments</div>
+          <div class="kpi-value" id="kpi-dept">—</div>
+          <div class="kpi-sub">Active divisions</div>
+        </div>
+        <div class="kpi kpi-amber">
+          <div class="kpi-label"><span class="kpi-label-dot"></span>Active Projects</div>
+          <div class="kpi-value" id="kpi-proj">—</div>
+          <div class="kpi-sub">In progress</div>
+        </div>
+        <div class="kpi kpi-purple">
+          <div class="kpi-label"><span class="kpi-label-dot"></span>Total Payroll</div>
+          <div class="kpi-value" id="kpi-sal">—</div>
+          <div class="kpi-sub">Annual (₹)</div>
+        </div>
+      </div>
+
+      <div class="dash-row">
+        <div class="panel">
+          <div class="panel-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+            Dept. Distribution
+            <span class="panel-head-accent">headcount</span>
+          </div>
+          <div class="panel-body">
+            <div class="donut-wrap">
+              <canvas id="donut-canvas" width="140" height="140"></canvas>
+              <div class="donut-legend" id="donut-legend"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Project Budgets
+            <span class="panel-head-accent">in ₹</span>
+          </div>
+          <div class="panel-body">
+            <canvas id="bar-canvas" width="100%" height="190"></canvas>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+            Recent Hires
+          </div>
+          <div class="panel-body" style="padding-top:8px;padding-bottom:8px;">
+            <ul class="recent-list" id="recent-list"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ EMPLOYEES ══════════ -->
+    <!--
+      Employees tab: Add, edit, and view employee records.
+    -->
+    <section class="tab-panel hidden" id="tab-employees">
+      <div class="form-panel mb">
+        <div class="form-panel-head" id="emp-form-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+          Employee Record
+          <span class="form-mode-badge" id="emp-mode-badge">New</span>
+          <button class="close-btn hidden" id="emp-cancel" title="Cancel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="form-body">
+          <div class="field-row cols-3" style="margin-bottom:12px">
+            <div class="field">
+              <label>First Name</label>
+              <input type="text" id="emp-fname" placeholder="e.g. Priya" />
+            </div>
+            <div class="field">
+              <label>Last Name</label>
+              <input type="text" id="emp-lname" placeholder="e.g. Patel" />
+            </div>
+            <div class="field">
+              <label>Email Address</label>
+              <input type="email" id="emp-email" placeholder="priya@company.com" />
+            </div>
+          </div>
+          <div class="field-row cols-3">
+            <div class="field">
+              <label>Phone</label>
+              <input type="text" id="emp-phone" placeholder="9876543210" />
+            </div>
+            <div class="field">
+              <label>Annual Salary (₹)</label>
+              <input type="number" id="emp-salary" placeholder="0" min="0" />
+            </div>
+            <div class="field">
+              <label>Department</label>
+              <select id="emp-dept"><option value="">— Select —</option></select>
+            </div>
+          </div>
+        </div>
+        <div class="form-foot">
+          <button class="btn btn-primary" id="emp-add-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add Employee
+          </button>
+          <button class="btn btn-update hidden" id="emp-upd-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Save Changes
+          </button>
+          <span class="flash" id="emp-flash"></span>
+        </div>
+      </div>
+
+      <div class="table-panel">
+        <div class="table-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Employee Directory
+          <span class="table-count" id="emp-count">0 records</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="sortable" data-col="name">Name <span class="sort-icon"><span class="up"></span><span class="down"></span></span></th>
+                <th class="sortable" data-col="email">Email <span class="sort-icon"><span class="up"></span><span class="down"></span></span></th>
+                <th class="sortable" data-col="phone">Phone <span class="sort-icon"><span class="up"></span><span class="down"></span></span></th>
+                <th class="sortable" data-col="dept">Department <span class="sort-icon"><span class="up"></span><span class="down"></span></span></th>
+                <th class="sortable th-right" data-col="salary">Salary <span class="sort-icon"><span class="up"></span><span class="down"></span></span></th>
+                <th class="th-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="emp-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-foot">
+          <span>Double-click a row to edit</span>
+          <span id="emp-foot-info">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ DEPARTMENTS ══════════ -->
+    <!--
+      Departments tab: Manage department info and budgets.
+    -->
+    <section class="tab-panel hidden" id="tab-departments">
+      <div class="form-panel mb">
+        <div class="form-panel-head" id="dept-form-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+          Department Record
+          <span class="form-mode-badge" id="dept-mode-badge">New</span>
+          <button class="close-btn hidden" id="dept-cancel" title="Cancel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="form-body">
+          <div class="field-row cols-2-1">
+            <div class="field">
+              <label>Department Name</label>
+              <input type="text" id="dept-name" placeholder="e.g. Engineering" />
+            </div>
+            <div class="field">
+              <label>Annual Budget (₹)</label>
+              <input type="number" id="dept-budget" placeholder="0" min="0" />
+            </div>
+          </div>
+        </div>
+        <div class="form-foot">
+          <button class="btn btn-primary" id="dept-add-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add Department
+          </button>
+          <button class="btn btn-update hidden" id="dept-upd-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Save Changes
+          </button>
+          <span class="flash" id="dept-flash"></span>
+        </div>
+      </div>
+
+      <div class="table-panel">
+        <div class="table-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Departments
+          <span class="table-count" id="dept-count">0 records</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Department Name</th>
+                <th class="th-right">Budget (₹)</th>
+                <th>Headcount</th>
+                <th class="th-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dept-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-foot">
+          <span>Click Edit to modify a record</span>
+          <span id="dept-foot-info">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ PROJECTS ══════════ -->
+    <!--
+      Projects tab: Track project details and status.
+    -->
+    <section class="tab-panel hidden" id="tab-projects">
+      <div class="form-panel mb">
+        <div class="form-panel-head" id="proj-form-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+          Project Record
+          <span class="form-mode-badge" id="proj-mode-badge">New</span>
+          <button class="close-btn hidden" id="proj-cancel" title="Cancel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="form-body">
+          <div class="field-row cols-3" style="margin-bottom:12px">
+            <div class="field col-span-2">
+              <label>Project Name</label>
+              <input type="text" id="proj-name" placeholder="e.g. CRM Redesign" />
+            </div>
+            <div class="field">
+              <label>Budget (₹)</label>
+              <input type="number" id="proj-budget" placeholder="0" min="0" />
+            </div>
+          </div>
+          <div class="field-row cols-4">
+            <div class="field">
+              <label>Status</label>
+              <select id="proj-status">
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="on_hold">On Hold</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Department</label>
+              <select id="proj-dept"><option value="">— None —</option></select>
+            </div>
+            <div class="field">
+              <label>Start Date</label>
+              <input type="date" id="proj-start" />
+            </div>
+            <div class="field">
+              <label>End Date</label>
+              <input type="date" id="proj-end" />
+            </div>
+          </div>
+        </div>
+        <div class="form-foot">
+          <button class="btn btn-primary" id="proj-add-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add Project
+          </button>
+          <button class="btn btn-update hidden" id="proj-upd-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Save Changes
+          </button>
+          <span class="flash" id="proj-flash"></span>
+        </div>
+      </div>
+
+      <div class="table-panel">
+        <div class="table-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Projects
+          <span class="table-count" id="proj-count">0 records</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Project Name</th>
+                <th class="th-right">Budget (₹)</th>
+                <th>Status</th>
+                <th>Department</th>
+                <th>Start Date</th>
+                <th class="th-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="proj-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-foot">
+          <span>Click Edit to modify a record</span>
+          <span id="proj-foot-info">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ DEPENDENTS ══════════ -->
+    <!--
+      Dependents tab: Manage employee dependents.
+    -->
+    <section class="tab-panel hidden" id="tab-dependents">
+      <div class="form-panel mb">
+        <div class="form-panel-head" id="dep-form-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+          Dependent Record
+          <span class="form-mode-badge" id="dep-mode-badge">New</span>
+          <button class="close-btn hidden" id="dep-cancel" title="Cancel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="form-body">
+          <div class="field-row cols-4">
+            <div class="field">
+              <label>Employee</label>
+              <select id="dep-emp"><option value="">— Select —</option></select>
+            </div>
+            <div class="field">
+              <label>Dependent Name</label>
+              <input type="text" id="dep-name" placeholder="Full name" />
+            </div>
+            <div class="field">
+              <label>Relationship</label>
+              <select id="dep-rel">
+                <option value="">— Select —</option>
+                <option>Spouse</option>
+                <option>Child</option>
+                <option>Parent</option>
+                <option>Sibling</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Date of Birth</label>
+              <input type="date" id="dep-dob" />
+            </div>
+          </div>
+        </div>
+        <div class="form-foot">
+          <button class="btn btn-primary" id="dep-add-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add Dependent
+          </button>
+          <button class="btn btn-update hidden" id="dep-upd-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Save Changes
+          </button>
+          <span class="flash" id="dep-flash"></span>
+        </div>
+      </div>
+
+      <div class="table-panel">
+        <div class="table-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Dependents
+          <span class="table-count" id="dep-count">0 records</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Dependent Name</th>
+                <th>Employee</th>
+                <th>Relationship</th>
+                <th>Date of Birth</th>
+                <th class="th-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dep-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-foot">
+          <span>Click Edit to modify a record</span>
+          <span id="dep-foot-info">—</span>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+
+  <footer class="statusbar">
+    <span>Employee Management System &nbsp;·&nbsp; DBMS Lab Project &nbsp;|&nbsp; Developed by <strong>Shubham</strong></span>
+    <div class="statusbar-right">
+      <span id="sb-records">—</span>
+      <span id="sb-tab">Overview</span>
+    </div>
+  </footer>
+
+</div><!-- /main-wrapper -->
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# requirements.txt for Employee Management Flask App
+Flask
+Flask-Cors
+python-dotenv
+gunicorn

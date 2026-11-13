@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.venv/
+
+# Instance folder (Flask)
+instance/
+
+# SQLite database
+*.db
+
+# VS Code settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python environment
+.env
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
