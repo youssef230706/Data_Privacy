@@ -541,3 +541,4 @@ if __name__ == '__main__':
     os.makedirs('instance', exist_ok=True)
     init_db()
     app.run(debug=False)
+    
