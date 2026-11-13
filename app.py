@@ -28,13 +28,23 @@ TODO: Add user authentication, API docs, and more tests
 # All dependents-related endpoints below are written by Shubham.
 
 import sqlite3
+import logging
 import uuid
+import os
+from dotenv import load_dotenv
+
+
 from datetime import date
 from flask import Flask, render_template, request, jsonify, g, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-
+logging.basicConfig(
+    filename='security.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+load_dotenv()
 app = Flask(__name__)
-app.secret_key = 'change-this-secret-key'   # needed for login sessions
+app.secret_key = os.environ['SECRET_KEY']
 DATABASE = 'instance/company.db'
 
 
@@ -310,20 +320,64 @@ def delete_department(did):
 # ── Employees API ──────────────────────────────────────────────────────────────
 
 @app.route('/api/employees', methods=['GET'])
+
 def get_employees():
+    # Identify the employee linked to the logged-in user
+    current_user = query(
+        "SELECT employee_id FROM users WHERE id = ?",
+        (session['user_id'],),
+        one=True
+    )
+
+    own_employee_id = current_user['employee_id'] if current_user else None
+    is_admin = session.get('role') == 'admin'
+
     rows = query("""
         SELECT e.*, d.name AS dept_name
         FROM employees e
         LEFT JOIN departments d ON d.id = e.department_id
         ORDER BY e.created_at DESC
     """)
+
     result = []
+
     for r in rows:
         rec = row2dict(r)
-        rec['department'] = {'id': rec['department_id'], 'name': rec['dept_name']} if rec['dept_name'] else None
+
+        rec['department'] = {
+            'id': rec['department_id'],
+            'name': rec['dept_name']
+        } if rec['dept_name'] else None
+
         del rec['dept_name']
+
+        # Do not expose other employees' private information
+        if not is_admin and rec['id'] != own_employee_id:
+            rec['salary'] = None
+            rec['phone'] = None
+            rec['email'] = None
+
         result.append(rec)
+
     return jsonify(result)
+
+
+@app.route('/api/employees/confidential', methods=['GET'])
+def get_confidential_employees():
+
+    if session.get('role') != 'admin':
+        logging.warning(
+            "UNAUTHORIZED_ACCESS | user=%s | endpoint=%s | result=DENIED",
+            session.get('username'),
+            request.path
+        )
+
+        return jsonify({
+            'error': 'Access denied: confidential records',
+            'status': 'DENIED'
+        }), 403
+
+    return get_employees()
 
 
 @app.route('/api/employees', methods=['POST'])
@@ -410,19 +464,51 @@ def delete_project(pid):
 # ── Dependents API ─────────────────────────────────────────────────────────────
 
 @app.route('/api/dependents', methods=['GET'])
+
 def get_dependents():
-    rows = query("""
-        SELECT d.*, e.first_name||' '||e.last_name AS emp_name
-        FROM dependents d
-        LEFT JOIN employees e ON e.id = d.employee_id
-        ORDER BY d.created_at DESC
-    """)
+    is_admin = session.get('role') == 'admin'
+
+    if is_admin:
+        rows = query("""
+            SELECT d.*, e.first_name || ' ' || e.last_name AS emp_name
+            FROM dependents d
+            LEFT JOIN employees e ON e.id = d.employee_id
+            ORDER BY d.created_at DESC
+        """)
+    else:
+        rows = query("""
+            SELECT d.*, e.first_name || ' ' || e.last_name AS emp_name
+            FROM dependents d
+            JOIN employees e ON e.id = d.employee_id
+            JOIN users u ON u.employee_id = e.id
+            WHERE u.id = ?
+            ORDER BY d.created_at DESC
+        """, (session['user_id'],))
+
     result = []
+
     for r in rows:
         rec = row2dict(r)
         rec['emp_name'] = rec.get('emp_name') or 'Unknown'
         result.append(rec)
+
     return jsonify(result)
+
+
+@app.route('/api/dependents/confidential', methods=['GET'])
+def get_confidential_dependents():
+    if session.get('role') != 'admin':
+        logging.warning(
+            "UNAUTHORIZED_ACCESS | user=%s | endpoint=%s | result=DENIED",
+            session.get('username'),
+            request.path
+        )
+        return jsonify({
+            'error': 'Access denied: confidential dependents',
+            'status': 'DENIED'
+        }), 403
+
+    return get_dependents()
 
 
 @app.route('/api/dependents', methods=['POST'])
@@ -454,4 +540,4 @@ if __name__ == '__main__':
     import os
     os.makedirs('instance', exist_ok=True)
     init_db()
-    app.run(debug=True)
+    app.run(debug=False)
