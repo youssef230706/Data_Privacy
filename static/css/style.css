@@ -817,3 +817,19 @@ td {
 }
 
 .mb { margin-bottom: 14px; }
+
+
+/* ── Roles: admin / employee ───────────────────────────────────── */
+.profile-section { flex-wrap: wrap; }
+.profile-name { font-size: 13px; width: 100%; }
+.logout-link { margin-left: auto; }
+.role-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-right: 8px; }
+.role-admin    { background: rgba(91,124,250,.18); color: #5b7cfa; }
+.role-employee { background: rgba(52,201,139,.18); color: #34c98b; }
+.logout-link { font-size: 12px; white-space: nowrap; color: #a8afc7; text-decoration: none; }
+.logout-link:hover { color: #f25c5c; }
+
+/* employees: read-only (no add forms, no edit/delete buttons) */
+body.read-only .form-panel,
+body.read-only .row-acts,
+body.read-only th.th-right:last-child { display: none !important; }

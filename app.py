@@ -30,9 +30,11 @@ TODO: Add user authentication, API docs, and more tests
 import sqlite3
 import uuid
 from datetime import date
-from flask import Flask, render_template, request, jsonify, g
+from flask import Flask, render_template, request, jsonify, g, session, redirect, url_for
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+app.secret_key = 'change-this-secret-key'   # needed for login sessions
 DATABASE = 'instance/company.db'
 
 
@@ -113,6 +115,15 @@ def init_db():
             date_of_birth   TEXT NOT NULL,
             created_at      TEXT DEFAULT (datetime('now'))
         );
+
+        -- login accounts: role is 'admin' or 'employee'
+        CREATE TABLE IF NOT EXISTS users (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            username        TEXT UNIQUE NOT NULL,
+            password_hash   TEXT NOT NULL,
+            role            TEXT NOT NULL CHECK (role IN ('admin', 'employee')),
+            employee_id     TEXT REFERENCES employees(id) ON DELETE SET NULL
+        );
     """)
 
     # seed only when tables are empty
@@ -180,8 +191,80 @@ def init_db():
                 (str(uuid.uuid4()), e['e5'], 'Sita Kumar',    'Parent', '1958-12-01'),
             ]
         )
+
+        # one employee login per seeded employee (username / password)
+        db.executemany(
+            "INSERT INTO users (username,password_hash,role,employee_id) VALUES (?,?,?,?)",
+            [
+                ('yahia',   generate_password_hash('yahia123'),   'employee', e['e1']),
+                ('mostafa', generate_password_hash('mostafa123'), 'employee', e['e2']),
+                ('youssef', generate_password_hash('youssef123'), 'employee', e['e3']),
+                ('alyaa',   generate_password_hash('alyaa123'),   'employee', e['e4']),
+                ('habiba',  generate_password_hash('habiba123'),  'employee', e['e5']),
+            ]
+        )
+
+    # always make sure an admin account exists
+    if db.execute("SELECT COUNT(*) FROM users WHERE role='admin'").fetchone()[0] == 0:
+        db.execute("INSERT INTO users (username,password_hash,role) VALUES (?,?,?)",
+                   ('admin', generate_password_hash('admin123'), 'admin'))
     db.commit()
     db.close()
+
+
+# ── Access control (runs before every request) ─────────────────────────────────
+
+@app.before_request
+def check_access():
+    # login page and css/js files are open to everyone
+    if request.endpoint in ('login', 'static'):
+        return None
+
+    # 1) must be logged in
+    if 'user_id' not in session:
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Please log in first'}), 401
+        return redirect(url_for('login'))
+
+    # 2) only admins may add / edit / delete (POST, PUT, DELETE)
+    if request.path.startswith('/api/') and request.method != 'GET' \
+            and session.get('role') != 'admin':
+        return jsonify({'error': 'Admins only: employees have read-only access'}), 403
+    return None
+
+
+# ── Login / logout ─────────────────────────────────────────────────────────────
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        user = query("SELECT * FROM users WHERE username=?",
+                     (request.form.get('username', '').strip().lower(),), one=True)
+        if user and check_password_hash(user['password_hash'], request.form.get('password', '')):
+            session.clear()
+            session['user_id']  = user['id']
+            session['username'] = user['username']
+            session['role']     = user['role']
+            return redirect(url_for('index'))
+        error = 'Wrong username or password'
+    return render_template('login.html', error=error)
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+
+@app.route('/api/me', methods=['GET'])
+def me():
+    row = query("""
+        SELECT u.username, u.role, e.first_name, e.last_name
+        FROM users u LEFT JOIN employees e ON e.id = u.employee_id
+        WHERE u.id = ?""", (session['user_id'],), one=True)
+    name = f"{row['first_name']} {row['last_name']}" if row['first_name'] else row['username'].title()
+    return jsonify({'username': row['username'], 'role': row['role'], 'name': name})
 
 
 # ── Page ───────────────────────────────────────────────────────────────────────

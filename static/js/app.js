@@ -14,10 +14,8 @@ function showGreeting() {
   if (hour < 12) greet = 'Good morning';
   else if (hour < 18) greet = 'Good afternoon';
   else greet = 'Good evening';
-  const profile = document.querySelector('.profile-section span');
-  if (profile) profile.textContent = greet + ', Shubham!';
+  return greet;
 }
-document.addEventListener('DOMContentLoaded', showGreeting);
 //
 // End of developer customizations (May 2026)
 //
@@ -30,6 +28,7 @@ const S = {
   projects:    [],
   dependents:  [],
   activeTab:   'dashboard',
+  user:        null,            // { username, role, name } from /api/me
   empEdit: null, deptEdit: null, projEdit: null, depEdit: null,
   empSort: { col: 'name', asc: true },
 };
@@ -40,13 +39,16 @@ const inr = n  => '₹' + Number(n || 0).toLocaleString('en-IN');
 const AV_COLORS = ['av-blue','av-green','av-amber','av-purple','av-red'];
 const CHART_COLORS = ['#5b7cfa','#34c98b','#f5a623','#a07cf0','#f25c5c','#22d3ee','#fb923c'];
 
+const isAdmin = () => S.user?.role === 'admin';
+
 async function api(method, url, body) {
   const r = await fetch(url, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
   });
-  return r.json();
+  if (r.status === 401) { window.location = '/login'; return {}; }   // session expired
+  return r.json();   // 403 returns { error: 'Admins only…' }
 }
 
 function flash(id, ok, msg) {
@@ -99,7 +101,7 @@ async function reload() {
   S.dependents  = deps;
 
   $('global-loader').classList.add('hidden');
-  $('tab-dashboard').classList.remove('hidden');
+  $('tab-' + S.activeTab).classList.remove('hidden');
 
   syncSelects();
   renderAll();
@@ -135,6 +137,7 @@ function updatePills() {
 // DASHBOARD
 // ═══════════════════════════════════════════════════════════════
 function renderDashboard() {
+  if (!isAdmin()) return;   // stats are for admins only
   const payroll = S.employees.reduce((s, e) => s + Number(e.salary), 0);
   const active  = S.projects.filter(p => p.status === 'active').length;
 
@@ -434,6 +437,7 @@ function clearEmpForm() {
 }
 
 function beginEditEmp(e) {
+  if (!isAdmin()) return;   // employees are read-only
   S.empEdit = e;
   $('emp-fname').value  = e.first_name;
   $('emp-lname').value  = e.last_name;
@@ -847,5 +851,25 @@ async function deleteDep(id) {
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────
-navigate('dashboard');
-reload();
+async function boot() {
+  S.user = await api('GET', '/api/me');
+  if (!S.user.role) return;
+
+  $('profile-name').textContent = `${showGreeting()}, ${S.user.name}!`;
+  $('profile-role').textContent = isAdmin() ? 'Admin' : 'Employee';
+  $('profile-role').classList.add(isAdmin() ? 'role-admin' : 'role-employee');
+
+  if (!isAdmin()) {
+    // read-only mode: hide forms, edit/delete buttons and the stats dashboard
+    document.body.classList.add('read-only');
+    document.querySelector('.nav-item[data-tab="dashboard"]').remove();
+    $('tab-dashboard').remove();
+    document.querySelectorAll('.table-foot span:first-child').forEach(s => s.textContent = 'Read-only access');
+    $('welcome-message').querySelector('p').textContent = 'You are signed in as an employee. You can view records but not change them.';
+    navigate('employees');
+  } else {
+    navigate('dashboard');
+  }
+  reload();
+}
+boot();
