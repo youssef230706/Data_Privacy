@@ -249,14 +249,16 @@ def check_access():
 def login():
     error = None
     if request.method == 'POST':
-        user = query("SELECT * FROM users WHERE username=?",
-                     (request.form.get('username', '').strip().lower(),), one=True)
+        username = request.form.get('username', '').strip().lower()
+        user = query("SELECT * FROM users WHERE username=?", (username,), one=True)
         if user and check_password_hash(user['password_hash'], request.form.get('password', '')):
             session.clear()
             session['user_id']  = user['id']
             session['username'] = user['username']
             session['role']     = user['role']
+            logging.info("LOGIN_SUCCESS | user=%s | ip=%s", username, request.remote_addr)
             return redirect(url_for('index'))
+        logging.warning("LOGIN_FAILED | user=%s | ip=%s", username, request.remote_addr)
         error = 'Wrong username or password'
     return render_template('login.html', error=error)
 
