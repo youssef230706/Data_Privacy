@@ -25,3 +25,14 @@ Thumbs.db
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints
+
+# Security logs
+security.log
+*.log
+
+# Local secrets
+.env
+
+# Local database
+instance/
+*.db
